@@ -1,4 +1,3 @@
-// Package cache implements a faulting style read cache on top of multiple micro stores
 package cache
 
 import (

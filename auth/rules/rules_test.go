@@ -9,13 +9,13 @@ import (
 func TestVerify(t *testing.T) {
 	srvResource := &auth.Resource{
 		Type:     "service",
-		Name:     "go.micro.service.foo",
+		Name:     "go.kratos.service.foo",
 		Endpoint: "Foo.Bar",
 	}
 
 	webResource := &auth.Resource{
 		Type:     "service",
-		Name:     "go.micro.web.foo",
+		Name:     "go.kratos.web.foo",
 		Endpoint: "/foo/bar",
 	}
 

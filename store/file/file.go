@@ -17,11 +17,11 @@ import (
 var (
 	// DefaultDatabase is the namespace that the bbolt store
 	// will use if no namespace is provided.
-	DefaultDatabase = "micro"
+	DefaultDatabase = "kratos"
 	// DefaultTable when none is specified
-	DefaultTable = "micro"
+	DefaultTable = "kratos"
 	// DefaultDir is the default directory for bbolt files
-	DefaultDir = filepath.Join(os.TempDir(), "micro", "store")
+	DefaultDir = filepath.Join(os.TempDir(), "kratos", "store")
 
 	// bucket used for data storage
 	dataBucket = "data"
@@ -86,7 +86,7 @@ func (m *fileStore) init(opts ...store.Option) error {
 		m.options.Table = DefaultTable
 	}
 
-	// create a directory /tmp/micro
+	// create a directory /tmp/kratos
 	dir := filepath.Join(DefaultDir, m.options.Database)
 	// Ignoring this as the folder might exist.
 	// Reads/Writes updates will return with sensible error messages
@@ -121,7 +121,7 @@ func (f *fileStore) getDB(database, table string) (*fileHandle, error) {
 		return fd, nil
 	}
 
-	// create a directory /tmp/micro
+	// create a directory /tmp/kratos
 	dir := filepath.Join(DefaultDir, database)
 	// create the database handle
 	fname := table + ".db"
