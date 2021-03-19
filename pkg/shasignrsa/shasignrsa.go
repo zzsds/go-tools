@@ -1,4 +1,4 @@
-package sha256rsa
+package shasignrsa
 
 import (
 	"crypto"
@@ -8,7 +8,7 @@ import (
 	"errors"
 )
 
-func Sha256RSA(source string, privateKey *rsa.PrivateKey, hash crypto.Hash) (siginres string, err error) {
+func ShaSignRsa(source string, privateKey *rsa.PrivateKey, hash crypto.Hash) (siginres string, err error) {
 	if privateKey == nil {
 		return "", errors.New("private key error")
 	}

@@ -1,4 +1,4 @@
-package sha256rsa
+package shasignrsa
 
 import (
 	"crypto"
@@ -31,7 +31,7 @@ func TestSha256RSA(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse rsa failed %v", err)
 	}
-	Sha256RSA(data, privateKey, crypto.SHA256)
+	ShaSignRsa(data, privateKey, crypto.SHA256)
 	// VerifySigin(data, sign)
 	// t.Log(VerifySigin(data, sign))
 
