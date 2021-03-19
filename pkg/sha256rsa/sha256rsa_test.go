@@ -6,8 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
-	"sort"
 	"strings"
 	"testing"
 )
@@ -33,27 +31,28 @@ func TestSha256RSA(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse rsa failed %v", err)
 	}
-	sign, _ := Sha256RSA(data, privateKey, crypto.SHA256)
-	VerifySigin(data, sign)
-	t.Log(VerifySigin(data, sign))
+	Sha256RSA(data, privateKey, crypto.SHA256)
+	// VerifySigin(data, sign)
+	// t.Log(VerifySigin(data, sign))
+
+	// block, _ := pem.Decode([]byte(pubKey))
+	// if block == nil {
+	// 	return false, errors.New("public key invalid")
+	// }
+	// pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	// if err != nil {
+	// 	return false, err
+	// }
 
 }
 
-func VerifySigin(source, sign string) (bool, error) {
-	block, _ := pem.Decode([]byte(pubKey))
-	if block == nil {
-		return false, errors.New("public key invalid")
-	}
-	var hash = crypto.Hash.New(crypto.SHA256)
-	if _, err := hash.Write([]byte(source)); err != nil {
-		return false, err
-	}
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
+func VerifySigin(source, sign string, pubKey *rsa.PublicKey, hash crypto.Hash) (bool, error) {
+	var h = crypto.Hash.New(hash)
+	if _, err := h.Write([]byte(source)); err != nil {
 		return false, err
 	}
 	s, _ := base64.StdEncoding.DecodeString(sign)
-	if err := rsa.VerifyPKCS1v15(pub.(*rsa.PublicKey), crypto.SHA256, hash.Sum(nil), s); err != nil {
+	if err := rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, h.Sum(nil), s); err != nil {
 		return false, err
 	}
 	return true, nil
