@@ -118,7 +118,6 @@ func Server(opts ...Option) middleware.Middleware {
 				if options.auth == nil {
 					return nil, errors.DataLoss("AuthInitFail ", "Auth Nut initialization")
 				}
-
 				account, err := options.auth.Inspect(strings.TrimPrefix(header, options.prefix))
 				if err != nil {
 					return nil, errors.Unauthorized("Unauthorized", "Token 解析失败")
