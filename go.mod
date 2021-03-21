@@ -15,6 +15,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
+	github.com/yunpian/yunpian-go-sdk v0.0.0-20171206021512-2193bf8a7459 // indirect
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
 	golang.org/x/text v0.3.5 // indirect
