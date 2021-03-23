@@ -15,12 +15,20 @@ type Option func(*options)
 
 type options struct {
 	logger log.Logger
+	server *transhttp.Server
 }
 
 // WithLogger with recovery logger.
 func WithLogger(logger log.Logger) Option {
 	return func(o *options) {
 		o.logger = logger
+	}
+}
+
+// WithLogger with recovery logger.
+func WithServer(server *transhttp.Server) Option {
+	return func(o *options) {
+		o.server = server
 	}
 }
 
@@ -31,6 +39,15 @@ func Server(opts ...Option) middleware.Middleware {
 	}
 	for _, o := range opts {
 		o(&options)
+	}
+
+	// 通过传参的http.Server 进行options
+	if options.server != nil {
+		options.server.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodOptions {
+				return
+			}
+		})
 	}
 
 	_ = log.NewHelper("middleware/cros", options.logger)
