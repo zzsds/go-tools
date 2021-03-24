@@ -11,7 +11,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.0.0-beta2
 	github.com/golang/protobuf v1.5.1 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/kr/pretty v0.2.1
 	github.com/miekg/dns v1.1.40
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
