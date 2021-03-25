@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
 	"github.com/zzsds/kratos-tools/auth"
@@ -77,7 +75,6 @@ func Server(opts ...Option) middleware.Middleware {
 		header: "Authorization",
 		prefix: auth.BearerScheme,
 		auth:   base,
-		// exclude: make([]Exclude, 0),
 	}
 	for _, o := range opts {
 		o(&options)
@@ -86,37 +83,26 @@ func Server(opts ...Option) middleware.Middleware {
 	_ = log.NewHelper("middleware/auth", options.logger)
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			var (
-				path      string
-				method    string
-				params    string
-				component string
-			)
 			if info, ok := http.FromServerContext(ctx); ok {
-				component = "HTTP"
 				request := info.Request
-				path = info.Request.RequestURI
-				method = info.Request.Method
-				params = info.Request.Form.Encode()
-
+				path := info.Request.RequestURI
+				method := info.Request.Method
 				// 过滤排除不验证路由
 				for _, exclude := range options.exclude {
 					if p, ok := exclude[method]; ok && p == path {
 						return handler(ctx, req)
 					}
 				}
-
 				_, ok := request.Header[options.header]
 				if !ok {
 					return nil, errors.Unauthorized("Unauthorized", "Header 参数名 %s 不存在", options.header)
 				}
 				header := request.Header.Get(options.header)
 				if !strings.HasPrefix(header, options.prefix) {
-					return nil, errors.Unauthorized("Unauthorized", "invalid authorization header. expected Bearer schema")
+					return nil, errors.Unauthorized("Unauthorized", "无效的授权头，正确应为 Bearer ")
 				}
-
 				if options.auth == nil {
-					return nil, errors.DataLoss("AuthInitFail ", "Auth Nut initialization")
+					return nil, errors.DataLoss("AuthInitFail ", "认证初始化失败")
 				}
 				account, err := options.auth.Inspect(strings.TrimPrefix(header, options.prefix))
 				if err != nil {
@@ -135,13 +121,7 @@ func Server(opts ...Option) middleware.Middleware {
 				ctx = http.NewServerContext(ctx, info)
 				// 作为备用方案，将认证解析数据再次写入到 context.Context 中
 				ctx = auth.ContextWithAccount(ctx, account)
-			} else if info, ok := grpc.FromServerContext(ctx); ok {
-				component = "gRPC"
-				path = info.FullMethod
-				method = "POST"
 			}
-			_, _, _, _ = path, method, params, component
-			fmt.Println()
 			reply, err = handler(ctx, req)
 			return
 		}
