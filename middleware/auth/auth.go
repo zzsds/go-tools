@@ -119,7 +119,7 @@ func Server(opts ...Option) middleware.Middleware {
 				}
 				// 将新增Form参数传递到 context.Context 中
 				ctx = http.NewServerContext(ctx, info)
-				// 作为备用方案，将认证解析数据再次写入到 context.Context 中
+				// 将认证解析数据再次写入到 context.Context 中
 				ctx = auth.ContextWithAccount(ctx, account)
 			}
 			reply, err = handler(ctx, req)
@@ -128,6 +128,7 @@ func Server(opts ...Option) middleware.Middleware {
 	}
 }
 
+// GetID 获取请求ID
 func GetID(ctx context.Context) int32 {
 	var id int
 	account, ok := auth.AccountFromContext(ctx)
@@ -135,4 +136,24 @@ func GetID(ctx context.Context) int32 {
 		id, _ = strconv.Atoi(account.ID)
 	}
 	return int32(id)
+}
+
+// GetType 获取请求类型【来源】
+func GetType(ctx context.Context) string {
+	var authType string
+	account, ok := auth.AccountFromContext(ctx)
+	if ok {
+		authType = account.Type
+	}
+	return authType
+}
+
+// GetScopes 获取权限范围 【角色/权限】数组
+func GetScopes(ctx context.Context) []string {
+	var scopes []string
+	account, ok := auth.AccountFromContext(ctx)
+	if ok {
+		scopes = account.Scopes
+	}
+	return scopes
 }
