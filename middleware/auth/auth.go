@@ -106,7 +106,7 @@ func Server(opts ...Option) middleware.Middleware {
 				}
 				account, err := options.auth.Inspect(strings.TrimPrefix(header, options.prefix))
 				if err != nil {
-					return nil, errors.Unauthorized("Unauthorized", "Token 解析失败")
+					return nil, errors.Unauthorized("Unauthorized", "Token 解析失败/已过期")
 				}
 				if request.Form == nil {
 					request.Form = make(url.Values)
