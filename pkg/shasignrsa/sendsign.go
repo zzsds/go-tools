@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2021-03-24 11:32:44
+ * @LastEditTime: 2021-04-26 10:51:56
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \tools\pkg\shasignrsa\sendsign.go
+ */
 package shasignrsa
 
 import (
@@ -8,7 +16,7 @@ import (
 	"errors"
 )
 
-func ShaSignRsa(source string, privateKey *rsa.PrivateKey, hash crypto.Hash) (siginres string, err error) {
+func SendSign(source string, privateKey *rsa.PrivateKey, hash crypto.Hash) (siginres string, err error) {
 	if privateKey == nil {
 		return "", errors.New("private key error")
 	}
