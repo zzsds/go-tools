@@ -85,7 +85,7 @@ func Server(opts ...Option) middleware.Middleware {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			if info, ok := http.FromServerContext(ctx); ok {
 				request := info.Request
-				path := info.Request.RequestURI
+				path := info.Request.URL.Path
 				method := info.Request.Method
 				// 过滤排除不验证路由
 				for _, exclude := range options.exclude {
