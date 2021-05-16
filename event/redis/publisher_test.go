@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 func TestPublisher(t *testing.T) {
 	pub := NewPublisher(rdb, testChannel)
 	defer pub.Close()
-	if err := pub.Publish(context.Background(), event.Event{Key: "key1", Payload: []byte("jayden")}); err != nil {
+	if err := pub.Publish(context.Background(), event.Event{Payload: []byte(`{"id": 1, "amount": 12}`)}); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(time.Second * 2)

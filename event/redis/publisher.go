@@ -1,10 +1,9 @@
 package redis
 
 import (
+	"bytes"
 	"context"
 	"errors"
-	"reflect"
-	"unsafe"
 
 	"github.com/go-kratos/kratos/v2/event"
 	"github.com/go-redis/redis/v8"
@@ -30,13 +29,7 @@ func NewPublisher(rdb *redis.Client, channel string) event.Publisher {
 }
 
 func (p *publisher) Publish(ctx context.Context, event event.Event) error {
-	size := int(unsafe.Sizeof(event))
-	var x reflect.SliceHeader
-	x.Len = size
-	x.Cap = size
-	x.Data = uintptr(unsafe.Pointer(&event))
-	msg := *(*[]byte)(unsafe.Pointer(&x))
-	return p.writer.Publish(ctx, p.channel, msg).Err()
+	return p.writer.Publish(ctx, p.channel, bytes.NewBuffer(event.Payload).String()).Err()
 }
 
 func (p *publisher) Close() error {

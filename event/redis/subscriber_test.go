@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,12 +15,14 @@ func TestSubscriber(t *testing.T) {
 		r.Close()
 	})
 	go r.Subscribe(context.Background(), func(ctx context.Context, event event.Event) error {
-		t.Logf("sub: key=%s value=%s header=%v", event.Key, event.Payload, event.Properties)
+		fmt.Println(event, string(event.Payload), "33333")
+		// t.Logf("sub: key=%s value=%s header=%v", event.Key, event.Payload, event.Properties)
 		return nil
 	})
+	time.Sleep(2 * time.Second)
 	p := NewPublisher(rdb, testChannel)
 	p.Publish(context.Background(), event.Event{
-		Key:     "key4",
-		Payload: []byte("jayden"),
+		// Key:     testChannel,
+		Payload: []byte(`{"amount": 12, "id": 1}`),
 	})
 }
