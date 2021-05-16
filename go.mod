@@ -3,13 +3,18 @@ module github.com/zzsds/kratos-tools
 go 1.15
 
 require (
+	github.com/DataDog/sketches-go v0.0.0-20190923095040-43f19ad77ff7 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.7+incompatible
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
+	github.com/benbjohnson/clock v1.0.0 // indirect
+	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ef-ds/deque v1.0.4
 	github.com/go-kratos/etcd v0.0.0-20210311162832-e0fdc8177742
+	github.com/go-kratos/kafka v0.0.0-20210402045139-d3111445976d
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
+	github.com/go-redis/redis/v8 v8.7.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.5.1
