@@ -1,8 +1,8 @@
 package redis
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 
 	"github.com/go-kratos/kratos/v2/event"
@@ -17,19 +17,46 @@ var _ event.Publisher = (*publisher)(nil)
 // PublisherOption is a publisher options.
 type PublisherOption func(*publisher)
 
+func WithMaxLen(max int64) PublisherOption {
+	return func(p *publisher) {
+		p.maxLen = max
+	}
+}
+
+func WithMaxLenApprox(max int64) PublisherOption {
+	return func(p *publisher) {
+		p.maxLenApprox = max
+	}
+}
+
 type publisher struct {
-	writer  *redis.Client
-	channel string
+	maxLen       int64
+	maxLenApprox int64
+	writer       *redis.Client
+	stream       string
 }
 
 // NewPublisher new a redis publisher.
-func NewPublisher(rdb *redis.Client, channel string) event.Publisher {
-	pub := &publisher{rdb, channel}
+func NewPublisher(rdb *redis.Client, stream string, opts ...PublisherOption) event.Publisher {
+	pub := &publisher{
+		writer: rdb,
+		stream: stream,
+	}
+	for _, o := range opts {
+		o(pub)
+	}
 	return pub
 }
 
 func (p *publisher) Publish(ctx context.Context, event event.Event) error {
-	return p.writer.Publish(ctx, p.channel, bytes.NewBuffer(event.Payload).String()).Err()
+	var properties []byte
+	if event.Properties != nil {
+		properties, _ = json.Marshal(event.Properties)
+	}
+	return p.writer.XAdd(ctx, &redis.XAddArgs{
+		Stream: p.stream,
+		Values: map[string]interface{}{"key": event.Key, "payload": event.Payload, "properties": properties},
+	}).Err()
 }
 
 func (p *publisher) Close() error {
