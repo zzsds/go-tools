@@ -56,46 +56,50 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 	sub := &subscriber{
 		reader: rdb,
 		block:  5 * time.Second,
-		stream: []string{stream, "$"},
+		stream: []string{stream, ">"},
 		count:  1,
+		group:  "group",
 		exit:   make(chan bool),
 	}
 	for _, o := range opts {
 		o(sub)
+	}
+	if err := sub.reader.XGroupCreate(rdb.Context(), sub.stream[0], sub.group, "$"); err != nil {
+		log.Println(err)
 	}
 	return sub
 }
 
 // Subscribe 消费
 func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
-	go func() {
-		for {
-			select {
-			case <-s.exit:
-				return
-			default:
-				cmd := s.reader.XRead(ctx, &redis.XReadArgs{
-					Block:   s.block,
-					Streams: s.stream,
-					Count:   s.count,
-				})
-				if cmd.Err() != nil {
-					fmt.Println(cmd.Err())
-					continue
-				}
-				s, err := cmd.Result()
-				if err != nil {
-					log.Fatalln(err)
-					continue
-				}
-				fmt.Println(s)
-				if err := h(ctx, event.Event{Key: "jayden"}); err != nil {
-					fmt.Println(err)
-				}
-				// s.reader.XAck(ctx, s.stream[0], "", cmd.)
+	for {
+		cmd := s.reader.XReadGroup(ctx, &redis.XReadGroupArgs{
+			Block:    s.block,
+			Streams:  s.stream,
+			Count:    s.count,
+			Group:    s.group,
+			Consumer: "consumer",
+		})
+		if cmd.Err() != nil {
+			return cmd.Err()
+		}
+		res, err := cmd.Result()
+		for _, v := range res {
+			for _, va := range v.Messages {
+				log.Fatalln(va.Values)
 			}
 		}
-	}()
+		fmt.Println(res, res[0].Stream, res[0].Messages)
+		if err != nil {
+			log.Fatalln(err)
+			continue
+		}
+		if err := h(ctx, event.Event{Key: "jayden"}); err != nil {
+			fmt.Println(err)
+		}
+
+		s.reader.XAck(ctx, s.stream[0], s.group)
+	}
 	return nil
 }
 
