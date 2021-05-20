@@ -9,7 +9,7 @@ import (
 )
 
 func TestSubscriber(t *testing.T) {
-	r := NewSubscriber(rdb, testChannel)
+	r := NewSubscriber(rdb, testChannel, WithBlock(-1))
 	time.AfterFunc(time.Second*4, func() {
 		r.Close()
 	})
@@ -32,4 +32,12 @@ func TestSubscriber(t *testing.T) {
 	})
 
 	time.Sleep(2 * time.Second)
+}
+
+func TestXInfoGroups(t *testing.T) {
+	cmd := rdb.XInfoGroups(context.Background(), testChannel)
+	if cmd.Err() != nil {
+		t.Fatal(cmd.Err())
+	}
+	t.Log(cmd.Result())
 }
