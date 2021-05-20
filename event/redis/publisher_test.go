@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -29,8 +30,20 @@ func TestMain(m *testing.M) {
 func TestPublisher(t *testing.T) {
 	pub := NewPublisher(rdb, testChannel)
 	defer pub.Close()
-	if err := pub.Publish(context.Background(), event.Event{Key: "Frozen", Payload: []byte(`{"id": 1, "amount": 12}`)}); err != nil {
+	if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(`{"id": 1, "amount": 12}`)}); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(time.Second * 2)
+}
+
+func TestPublishers(t *testing.T) {
+	pub := NewPublisher(rdb, testChannel)
+	// defer pub.Close()
+	for i := 1; i < 102; i++ {
+		payload := fmt.Sprintf(`{"id": %d, "amount": %d}`, i, i*10)
+		if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(payload)}); err != nil {
+			t.Fatal(err)
+		}
+		// t.Log(payload)
+	}
 }

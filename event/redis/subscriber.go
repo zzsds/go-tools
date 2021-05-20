@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/event"
@@ -49,7 +48,7 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 	sub := &subscriber{
 		reader: rdb,
 		block:  5 * time.Second,
-		stream: []string{stream, ">"},
+		stream: []string{stream, "$"},
 		count:  1,
 		exit:   make(chan bool),
 	}
@@ -67,25 +66,19 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 			Streams: s.stream,
 			Count:   s.count,
 		})
-		if cmd.Err() != nil {
-			return cmd.Err()
-		}
-		res, err := cmd.Result()
-		for _, v := range res {
-			for _, va := range v.Messages {
-				log.Fatalln(va.Values)
-			}
-		}
-		fmt.Println(res, res[0].Stream, res[0].Messages)
+		stream, err := cmd.Result()
+		fmt.Println(stream[0].Messages[0].Values, 2222222)
 		if err != nil {
-			log.Fatalln(err)
-			continue
+			return err
 		}
-		if err := h(ctx, event.Event{Key: "jayden"}); err != nil {
+		s.stream[1] = stream[0].Messages[0].ID
+		val := stream[0].Messages[0].Values
+
+		if err := h(ctx, event.Event{Key: val["key"].(string), Payload: val["payload"].([]byte), Properties: val["properties"].(map[string]string)}); err != nil {
 			fmt.Println(err)
 		}
+		// time.Sleep(100 * time.Millisecond)
 	}
-	return nil
 }
 
 func (s *subscriber) Close() error {
