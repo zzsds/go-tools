@@ -55,7 +55,7 @@ func (p *publisher) Publish(ctx context.Context, event event.Event) error {
 	}
 	return p.writer.XAdd(ctx, &redis.XAddArgs{
 		Stream: p.stream,
-		Values: map[string]interface{}{"key": event.Key, "payload": event.Payload, "properties": properties},
+		Values: map[string]interface{}{"Key": event.Key, "Payload": event.Payload, "Properties": properties},
 	}).Err()
 }
 

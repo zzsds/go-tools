@@ -18,12 +18,19 @@ var (
 	rdb         *redis.Client
 )
 
+var (
+	pub event.Publisher
+	sub event.Subscriber
+)
+
 func TestMain(m *testing.M) {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     testArr,
 		Password: testPass,
 		DB:       0,
 	})
+	pub = NewPublisher(rdb, testChannel)
+	sub = NewSubscriber(rdb, testChannel)
 	os.Exit(m.Run())
 }
 
@@ -39,7 +46,18 @@ func TestPublisher(t *testing.T) {
 func TestPublishers(t *testing.T) {
 	pub := NewPublisher(rdb, testChannel)
 	// defer pub.Close()
-	for i := 1; i < 102; i++ {
+	for i := 1; i < 101; i++ {
+		payload := fmt.Sprintf(`{"id": %d, "amount": %d}`, i, i*10)
+		if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(payload), Properties: nil}); err != nil {
+			t.Fatal(err)
+		}
+		// t.Log(payload)
+	}
+}
+
+func BenchmarkPublisher(t *testing.B) {
+	// defer pub.Close()
+	for i := 1; i < t.N; i++ {
 		payload := fmt.Sprintf(`{"id": %d, "amount": %d}`, i, i*10)
 		if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(payload)}); err != nil {
 			t.Fatal(err)

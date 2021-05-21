@@ -2,7 +2,8 @@ package redis
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/event"
@@ -12,7 +13,6 @@ import (
 type subscriber struct {
 	reader *redis.Client
 	stream []string
-	group  string
 	block  time.Duration
 	count  int64
 	exit   chan bool
@@ -59,6 +59,7 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 }
 
 // Subscribe 消费
+// 将错误重新存到List 中
 func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 	for {
 		cmd := s.reader.XRead(ctx, &redis.XReadArgs{
@@ -67,14 +68,37 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 			Count:   s.count,
 		})
 		stream, err := cmd.Result()
-		fmt.Println(stream, 2222222)
 		if err != nil {
 			return err
 		}
-		// if err := h(ctx, event.Event{}); err != nil {
-		// 	fmt.Println(err)
-		// }
-		time.Sleep(100 * time.Millisecond)
+		var xsm redis.XStream
+		if len(stream) > 0 {
+			xsm = stream[0]
+		}
+		var msg redis.XMessage
+		if len(xsm.Messages) > 0 {
+			msg = xsm.Messages[0]
+		}
+		// next stream
+		s.stream[1] = msg.ID
+		key := msg.Values["Key"].(string)
+		b, _ := json.Marshal(msg.Values["Payload"])
+		e := event.Event{
+			Key:        key,
+			Payload:    b,
+			Properties: map[string]string{},
+		}
+		ekey := xsm.Stream + "Error"
+		mb, _ := json.Marshal(msg)
+		if properties := msg.Values["Properties"].(string); properties != "" {
+			if err := json.Unmarshal([]byte(properties), &e.Properties); err != nil {
+				log.Printf("ID %s properties Unmarshal fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
+				continue
+			}
+		}
+		if err := h(ctx, e); err != nil {
+			log.Printf("ID %s Handle fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
+		}
 	}
 }
 
