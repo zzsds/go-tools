@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 
@@ -49,13 +50,12 @@ func NewPublisher(rdb *redis.Client, stream string, opts ...PublisherOption) eve
 }
 
 func (p *publisher) Publish(ctx context.Context, event event.Event) error {
-	var properties []byte
-	if event.Properties != nil {
-		properties, _ = json.Marshal(event.Properties)
-	}
+	b, _ := json.Marshal(event)
+	// b, _ = base64.StdEncoding.DecodeString(base64.StdEncoding.EncodeToString(b))
+	// fmt.Println(json.Unmarshal(b, &event), string(event.Payload))
 	return p.writer.XAdd(ctx, &redis.XAddArgs{
 		Stream: p.stream,
-		Values: map[string]interface{}{"Key": event.Key, "Payload": event.Payload, "Properties": properties},
+		Values: map[string]interface{}{p.stream: base64.StdEncoding.EncodeToString(b)},
 	}).Err()
 }
 

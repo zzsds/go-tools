@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"time"
@@ -81,22 +82,25 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 		}
 		// next stream
 		s.stream[1] = msg.ID
-		key := msg.Values["Key"].(string)
-		b, _ := json.Marshal(msg.Values["Payload"])
-		e := event.Event{
-			Key:        key,
-			Payload:    b,
-			Properties: map[string]string{},
-		}
+		et := event.Event{}
 		ekey := xsm.Stream + "Error"
 		mb, _ := json.Marshal(msg)
-		if properties := msg.Values["Properties"].(string); properties != "" {
-			if err := json.Unmarshal([]byte(properties), &e.Properties); err != nil {
-				log.Printf("ID %s properties Unmarshal fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
+		switch val := msg.Values[xsm.Stream].(type) {
+		case string:
+			b, err := base64.StdEncoding.DecodeString(val)
+			if err != nil {
+				log.Printf("ID %s base64 decode fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
 				continue
 			}
+			if err := json.Unmarshal(b, &et); err != nil {
+				log.Printf("ID %s Unmarshal fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
+				continue
+			}
+		default:
+			// 直接跳出
+			continue
 		}
-		if err := h(ctx, e); err != nil {
+		if err := h(ctx, et); err != nil {
 			log.Printf("ID %s Handle fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
 		}
 	}

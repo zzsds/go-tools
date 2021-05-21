@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -10,20 +9,10 @@ import (
 	"github.com/go-kratos/kratos/v2/event"
 )
 
-type Demo struct {
-	ID     int     `json:"id,omitempty"`
-	Amount float64 `json:"amount,omitempty"`
-}
-
 func TestSubscribers(t *testing.T) {
 	r := NewSubscriber(rdb, testChannel)
 	go r.Subscribe(context.Background(), func(c context.Context, e event.Event) error {
-		fmt.Println(string(e.Payload))
-		var demo Demo
-		if err := json.Unmarshal(e.Payload, &demo); err != nil {
-			return err
-		}
-		t.Log(demo)
+		t.Log(string(e.Payload))
 		return nil
 	})
 	t.Run("TestPublishers", TestPublishers)
