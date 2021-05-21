@@ -12,8 +12,8 @@ import (
 func TestSubscribers(t *testing.T) {
 	r := NewSubscriber(rdb, testChannel)
 	go r.Subscribe(context.Background(), nil)
-	time.Sleep(2 * time.Second)
 	t.Run("TestPublishers", TestPublishers)
+	time.Sleep(5 * time.Second)
 }
 
 func TestSubscriber(t *testing.T) {

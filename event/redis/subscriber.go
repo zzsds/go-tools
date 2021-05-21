@@ -67,17 +67,14 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 			Count:   s.count,
 		})
 		stream, err := cmd.Result()
-		fmt.Println(stream[0].Messages[0].Values, 2222222)
+		fmt.Println(stream, 2222222)
 		if err != nil {
 			return err
 		}
-		s.stream[1] = stream[0].Messages[0].ID
-		val := stream[0].Messages[0].Values
-
-		if err := h(ctx, event.Event{Key: val["key"].(string), Payload: val["payload"].([]byte), Properties: val["properties"].(map[string]string)}); err != nil {
-			fmt.Println(err)
-		}
-		// time.Sleep(100 * time.Millisecond)
+		// if err := h(ctx, event.Event{}); err != nil {
+		// 	fmt.Println(err)
+		// }
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
