@@ -10,7 +10,7 @@ import (
 )
 
 func TestSubscribers(t *testing.T) {
-	r := NewSubscriber(rdb, testChannel)
+	r := NewSubscriber(rdb, testChannel, WithCount(3))
 	go r.Subscribe(context.Background(), func(c context.Context, e event.Event) error {
 		t.Log(string(e.Payload))
 		return nil

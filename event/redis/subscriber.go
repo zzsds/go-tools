@@ -3,13 +3,15 @@ package redis
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"log"
+	"reflect"
 	"time"
+	"unsafe"
 
 	"github.com/go-kratos/kratos/v2/event"
 	"github.com/go-redis/redis/v8"
 )
+
+var defaultID string = "$"
 
 type subscriber struct {
 	reader *redis.Client
@@ -49,7 +51,7 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 	sub := &subscriber{
 		reader: rdb,
 		block:  5 * time.Second,
-		stream: []string{stream, "$"},
+		stream: []string{stream, defaultID},
 		count:  1,
 		exit:   make(chan bool),
 	}
@@ -60,7 +62,8 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 }
 
 // Subscribe 消费
-// 将错误重新存到List 中
+// 目前只支持一个 stream key
+// 可支持多条数据处理
 func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 	for {
 		cmd := s.reader.XRead(ctx, &redis.XReadArgs{
@@ -68,41 +71,18 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 			Streams: s.stream,
 			Count:   s.count,
 		})
-		stream, err := cmd.Result()
+		xstream, err := cmd.Result()
 		if err != nil {
 			return err
 		}
-		var xsm redis.XStream
-		if len(stream) > 0 {
-			xsm = stream[0]
+		nextId := defaultID
+		// 同时处理多条消息
+		for _, msg := range xstream[0].Messages {
+			val, _ := msg.Values[xstream[0].Stream].(string)
+			b, _ := base64.StdEncoding.DecodeString(val)
+			_ = h(ctx, *(*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data)))
 		}
-		var msg redis.XMessage
-		if len(xsm.Messages) > 0 {
-			msg = xsm.Messages[0]
-		}
-		// next stream
-		s.stream[1] = msg.ID
-		et := event.Event{}
-		ekey := xsm.Stream + "Error"
-		mb, _ := json.Marshal(msg)
-		switch val := msg.Values[xsm.Stream].(type) {
-		case string:
-			b, err := base64.StdEncoding.DecodeString(val)
-			if err != nil {
-				log.Printf("ID %s base64 decode fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
-				continue
-			}
-			if err := json.Unmarshal(b, &et); err != nil {
-				log.Printf("ID %s Unmarshal fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
-				continue
-			}
-		default:
-			// 直接跳出
-			continue
-		}
-		if err := h(ctx, et); err != nil {
-			log.Printf("ID %s Handle fail %s listErr %v", msg.ID, err.Error(), s.reader.LPush(ctx, ekey, mb).Err())
-		}
+		s.stream[1] = nextId
 	}
 }
 
