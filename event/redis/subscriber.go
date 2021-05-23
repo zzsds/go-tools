@@ -11,7 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var defaultID string = "$"
+const defaultStart string = "$"
 
 type subscriber struct {
 	reader *redis.Client
@@ -51,7 +51,7 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 	sub := &subscriber{
 		reader: rdb,
 		block:  5 * time.Second,
-		stream: []string{stream, defaultID},
+		stream: []string{stream, defaultStart},
 		count:  1,
 		exit:   make(chan bool),
 	}
@@ -75,12 +75,16 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 		if err != nil {
 			return err
 		}
-		nextId := defaultID
-		// 同时处理多条消息
+		nextId := defaultStart
+		// 默认只处理一个 stream ，但可以同时处理多条消息
 		for _, msg := range xstream[0].Messages {
 			val, _ := msg.Values[xstream[0].Stream].(string)
 			b, _ := base64.StdEncoding.DecodeString(val)
-			_ = h(ctx, *(*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data)))
+			if err = h(ctx, *(*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))); err == nil {
+				// 处理消息成功直接删除
+				s.reader.XDel(ctx, s.stream[0], msg.ID)
+			}
+			nextId = msg.ID
 		}
 		s.stream[1] = nextId
 	}
