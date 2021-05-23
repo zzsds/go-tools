@@ -2,11 +2,9 @@ package redis
 
 import (
 	"context"
-	"encoding/base64"
+	"encoding/json"
 	"log"
-	"reflect"
 	"time"
-	"unsafe"
 
 	"github.com/go-kratos/kratos/v2/event"
 	"github.com/go-redis/redis/v8"
@@ -86,10 +84,13 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 		nextId := defaultStart
 		// 默认只处理一个 stream ，但可以同时处理多条消息
 		for _, msg := range xstream[0].Messages {
-			val, _ := msg.Values[xstream[0].Stream].(string)
-			b, _ := base64.StdEncoding.DecodeString(val)
-			et := (*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))
-			if err = h(ctx, *et); err == nil {
+			et := event.Event{
+				Key:        msg.Values["Key"].(string),
+				Payload:    []byte(msg.Values["Payload"].(string)),
+				Properties: map[string]string{},
+			}
+			json.Unmarshal([]byte(msg.Values["Properties"].(string)), &et.Properties)
+			if err = h(ctx, et); err == nil {
 				// 处理消息成功直接删除
 				s.reader.XDel(ctx, s.stream[0], msg.ID)
 			}

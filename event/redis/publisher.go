@@ -2,10 +2,8 @@ package redis
 
 import (
 	"context"
-	"encoding/base64"
+	"encoding/json"
 	"errors"
-	"reflect"
-	"unsafe"
 
 	"github.com/go-kratos/kratos/v2/event"
 	"github.com/go-redis/redis/v8"
@@ -51,11 +49,14 @@ func NewPublisher(rdb *redis.Client, stream string, opts ...PublisherOption) eve
 }
 
 func (p *publisher) Publish(ctx context.Context, e event.Event) error {
-	eventSize := int(unsafe.Sizeof(event.Event{}))
-	x := &reflect.SliceHeader{uintptr(unsafe.Pointer(&e)), eventSize, eventSize}
+	b, _ := json.Marshal(e.Properties)
 	return p.writer.XAdd(ctx, &redis.XAddArgs{
 		Stream: p.stream,
-		Values: map[string]interface{}{p.stream: base64.StdEncoding.EncodeToString(*(*[]byte)(unsafe.Pointer(x)))},
+		Values: map[string]string{
+			"Key":        e.Key,
+			"Payload":    string(e.Payload),
+			"Properties": string(b),
+		},
 	}).Err()
 }
 
