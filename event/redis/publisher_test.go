@@ -13,7 +13,7 @@ import (
 
 var (
 	testPass    = "123456"
-	testChannel = "AssetFrozen"
+	testChannel = "FROZEN_EVENT"
 	testArr     = "127.0.0.1:6379"
 	rdb         *redis.Client
 )
@@ -48,7 +48,7 @@ func TestPublishers(t *testing.T) {
 	// defer pub.Close()
 	for i := 1; i < 101; i++ {
 		payload := fmt.Sprintf(`{"id": %d, "amount": %d}`, i, i*10)
-		if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(payload), Properties: nil}); err != nil {
+		if err := pub.Publish(context.Background(), event.Event{Key: testChannel, Payload: []byte(payload), Properties: map[string]string{"name": "jayden"}}); err != nil {
 			t.Fatal(err)
 		}
 		// t.Log(payload)

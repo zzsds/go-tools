@@ -2,6 +2,8 @@ package redis
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -12,7 +14,7 @@ import (
 func TestSubscribers(t *testing.T) {
 	r := NewSubscriber(rdb, testChannel, WithCount(3))
 	go r.Subscribe(context.Background(), func(c context.Context, e event.Event) error {
-		t.Log(string(e.Payload))
+		t.Log(e.Key, string(e.Payload), e.Properties, "回调")
 		return nil
 	})
 	t.Run("TestPublishers", TestPublishers)
@@ -35,7 +37,14 @@ func TestXInfoStream(t *testing.T) {
 	if cmd.Err() != nil {
 		t.Fatal(cmd.Err())
 	}
-	t.Log(cmd.Result())
+	info, _ := cmd.Result()
+	t.Log(info.Length)
+	val := info.LastEntry.Values["FROZEN_EVENT"].(string)
+	b, _ := base64.StdEncoding.DecodeString(val)
+	t.Log("格式化", b)
+	et := event.Event{}
+	t.Log(json.Unmarshal(b, &et))
+	t.Log(et)
 }
 
 func TestXInfoGroups(t *testing.T) {

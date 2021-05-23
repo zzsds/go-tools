@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/base64"
+	"log"
 	"reflect"
 	"time"
 	"unsafe"
@@ -58,6 +59,9 @@ func NewSubscriber(rdb *redis.Client, stream string, opts ...SubscriberOption) e
 	for _, o := range opts {
 		o(sub)
 	}
+	if err := rdb.Ping(rdb.Context()).Err(); err != nil {
+		log.Fatalf("redis ping fail %v", err)
+	}
 	return sub
 }
 
@@ -72,6 +76,10 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 			Count:   s.count,
 		})
 		xstream, err := cmd.Result()
+		// 消息监听事件到期，自动循环
+		if err == redis.Nil {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -80,7 +88,8 @@ func (s *subscriber) Subscribe(ctx context.Context, h event.Handler) error {
 		for _, msg := range xstream[0].Messages {
 			val, _ := msg.Values[xstream[0].Stream].(string)
 			b, _ := base64.StdEncoding.DecodeString(val)
-			if err = h(ctx, *(*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))); err == nil {
+			et := (*event.Event)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))
+			if err = h(ctx, *et); err == nil {
 				// 处理消息成功直接删除
 				s.reader.XDel(ctx, s.stream[0], msg.ID)
 			}
