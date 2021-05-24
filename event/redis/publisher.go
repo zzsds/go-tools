@@ -52,7 +52,7 @@ func (p *publisher) Publish(ctx context.Context, e event.Event) error {
 	b, _ := json.Marshal(e.Properties)
 	return p.writer.XAdd(ctx, &redis.XAddArgs{
 		Stream: p.stream,
-		Values: map[string]string{
+		Values: map[string]interface{}{
 			"Key":        e.Key,
 			"Payload":    string(e.Payload),
 			"Properties": string(b),
