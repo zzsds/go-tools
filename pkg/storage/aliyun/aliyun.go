@@ -3,14 +3,12 @@ package aliyun
 import (
 	"errors"
 	"fmt"
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/zzsds/kratos-tools/pkg/storage"
 	"log"
 	"mime/multipart"
 	"net/url"
 	"path"
-	"runtime"
-
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/zzsds/kratos-tools/pkg/storage"
 )
 
 type AliYun struct {
@@ -79,15 +77,6 @@ func (a *AliYun) Init() error {
 
 // Upload 上传文件
 func (a *AliYun) Upload(file *multipart.FileHeader, work ...string) (*storage.Resource, error) {
-	var err error
-	defer func() {
-		if r := recover(); r != nil {
-			var buf = make([]byte, 1<<16)
-			buf = buf[:runtime.Stack(buf, false)]
-			err = fmt.Errorf("panic %s\n%s", r, buf)
-			log.Println(err)
-		}
-	}()
 	f, openError := file.Open() // 读取文件
 	if openError != nil {
 		return nil, errors.New("function file.Open() Filed, err:" + openError.Error())

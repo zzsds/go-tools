@@ -4,6 +4,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -130,4 +131,22 @@ func AccountFromContext(ctx context.Context) (*Account, bool) {
 // ContextWithAccount sets the account in the context
 func ContextWithAccount(ctx context.Context, account *Account) context.Context {
 	return context.WithValue(ctx, accountKey{}, account)
+}
+
+func (a *Account) GetMobile() string {
+	return a.Metadata["mobile"]
+}
+
+func (a *Account) GetID() int32 {
+	id, _ := strconv.Atoi(a.ID)
+	return int32(id)
+}
+
+func (a *Account) GetSource() string {
+	return a.Type
+}
+
+func (a *Account) GetRuleId() int32 {
+	scopes, _ := strconv.Atoi(a.Scopes[0])
+	return int32(scopes)
 }
