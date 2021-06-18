@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-04-26 10:47:24
- * @LastEditTime: 2021-04-26 11:10:09
+ * @LastEditTime: 2021-06-18 13:28:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \tools\pkg\shasignrsa\verifysign.go
@@ -20,7 +20,7 @@ func VerifySign(source, sign string, pubKey interface{}, hash crypto.Hash) (bool
 		return false, err
 	}
 	s, _ := base64.StdEncoding.DecodeString(sign)
-	if err := rsa.VerifyPKCS1v15(pubKey.(*rsa.PublicKey), crypto.SHA256, h.Sum(nil), s); err != nil {
+	if err := rsa.VerifyPKCS1v15(pubKey.(*rsa.PublicKey), hash, h.Sum(nil), s); err != nil {
 		return false, err
 	}
 	return true, nil
