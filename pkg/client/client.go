@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-24 11:32:44
- * @LastEditTime: 2021-06-16 14:57:00
+ * @LastEditTime: 2021-06-23 11:29:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \socloud-servere:\wuhuarou\renlanglang\zzsd\tools\pkg\client\client.go
@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 const (
@@ -36,7 +37,7 @@ func NewClient(ctx context.Context, opts ...OptionClient) (client *Client) {
 		httpClient.client = &http.Client{}
 	}
 	if httpClient.timeout == 0 {
-		httpClient.timeout = 5
+		httpClient.timeout = 5 * time.Second
 	}
 	return &Client{
 		hc: httpClient.client,
