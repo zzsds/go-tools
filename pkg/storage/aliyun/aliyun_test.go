@@ -11,10 +11,10 @@ var aliyun storage.Storage
 
 func TestMain(t *testing.M) {
 	aliyun = NewAliYun(func(o *Options) {
-		o.Path = "http://weflare.oss-cn-hangzhou.aliyuncs.com"
-		o.Bucket = "weflare"
-		o.AccessKey = "LTAI4FgL4Ew4kGTSEWQ8gSbo"
-		o.AccessKey = "ZElyfnMQ4E4tE8QKJeXdZmgJ54Mgea"
+		o.Path = "http://xxxx.oss-cn-hangzhou.aliyuncs.com"
+		o.Bucket = "xxxx"
+		o.AccessKey = "xxxxx"
+		o.AccessKey = "xxxxx"
 		o.Endpoint = "http://oss-cn-hangzhou.aliyuncs.com"
 	})
 	t.Run()
