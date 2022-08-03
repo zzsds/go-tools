@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/zzsds/kratos-tools/auth/provider"
+	"github.com/zzsds/go-tools/auth/provider"
 )
 
 // NewProvider returns an initialised oauth provider

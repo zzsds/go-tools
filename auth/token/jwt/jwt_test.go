@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zzsds/kratos-tools/auth"
-	"github.com/zzsds/kratos-tools/auth/token"
+	"github.com/zzsds/go-tools/auth"
+	"github.com/zzsds/go-tools/auth/token"
 )
 
 func TestGenerate(t *testing.T) {

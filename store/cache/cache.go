@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/zzsds/kratos-tools/store"
-	"github.com/zzsds/kratos-tools/store/memory"
+	"github.com/zzsds/go-tools/store"
+	"github.com/zzsds/go-tools/store/memory"
 )
 
 type cache struct {

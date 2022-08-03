@@ -4,7 +4,7 @@ import (
 	"mime/multipart"
 	"testing"
 
-	"github.com/zzsds/kratos-tools/pkg/storage"
+	"github.com/zzsds/go-tools/pkg/storage"
 )
 
 var aliyun storage.Storage

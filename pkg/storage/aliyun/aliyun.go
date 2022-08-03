@@ -3,12 +3,13 @@ package aliyun
 import (
 	"errors"
 	"fmt"
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/zzsds/kratos-tools/pkg/storage"
 	"log"
 	"mime/multipart"
 	"net/url"
 	"path"
+
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/zzsds/go-tools/pkg/storage"
 )
 
 type AliYun struct {

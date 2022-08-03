@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	ypclnt "github.com/yunpian/yunpian-go-sdk/sdk"
-	"github.com/zzsds/kratos-tools/pkg/sms"
+	"github.com/zzsds/go-tools/pkg/sms"
 )
 
 // YunPian ...

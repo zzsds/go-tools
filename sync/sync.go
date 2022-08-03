@@ -8,7 +8,7 @@ import (
 
 	"github.com/ef-ds/deque"
 	"github.com/pkg/errors"
-	"github.com/zzsds/kratos-tools/store"
+	"github.com/zzsds/go-tools/store"
 )
 
 // Sync implements a sync in for stores

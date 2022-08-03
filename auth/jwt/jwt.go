@@ -4,10 +4,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zzsds/kratos-tools/auth"
-	"github.com/zzsds/kratos-tools/auth/rules"
-	"github.com/zzsds/kratos-tools/auth/token"
-	jwtToken "github.com/zzsds/kratos-tools/auth/token/jwt"
+	"github.com/zzsds/go-tools/auth"
+	"github.com/zzsds/go-tools/auth/rules"
+	"github.com/zzsds/go-tools/auth/token"
+	jwtToken "github.com/zzsds/go-tools/auth/token/jwt"
 )
 
 // NewAuth returns a new instance of the Auth service

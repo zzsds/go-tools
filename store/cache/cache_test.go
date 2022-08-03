@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zzsds/kratos-tools/store"
-	"github.com/zzsds/kratos-tools/store/memory"
+	"github.com/zzsds/go-tools/store"
+	"github.com/zzsds/go-tools/store/memory"
 )
 
 func TestCache(t *testing.T) {

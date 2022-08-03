@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/zzsds/kratos-tools/auth"
+	"github.com/zzsds/go-tools/auth"
 )
 
 var (

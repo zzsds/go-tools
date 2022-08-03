@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/zzsds/kratos-tools/auth"
+	"github.com/zzsds/go-tools/auth"
 )
 
 // Verify an account has access to a resource using the rules provided. If the account does not have

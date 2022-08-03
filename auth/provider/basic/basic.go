@@ -1,7 +1,7 @@
 package basic
 
 import (
-	"github.com/zzsds/kratos-tools/auth/provider"
+	"github.com/zzsds/go-tools/auth/provider"
 )
 
 // NewProvider returns an initialised basic provider
